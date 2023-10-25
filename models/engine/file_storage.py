@@ -16,20 +16,29 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary, __objects."""
+        """Returns a dictionary of models currently in storage"""
         if (cls is None):
             return FileStorage.__objects
         else:
-            returned_obj = {}
+            CLSdict = {}
             for key, value in FileStorage.__objects.items():
                 if value.__class__ == cls:
-                    returned_obj[key] = value
-
-            return all_return
+                    CLSdict[key] = value
+            return CLSdict
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+
+    def delete(self, obj=None):
+        """
+        Delete obj from __objects
+        """
+        if (obj is None):
+            return
+        key = obj.to_dict()['__class__'] + '.' + obj.id
+        if key in FileStorage.__objects:
+            del FileStorage.__objects[key]
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -43,11 +52,10 @@ class FileStorage:
     def reload(self):
         """Loads storage dictionary from file"""
         classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
-
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
@@ -58,13 +66,5 @@ class FileStorage:
             pass
 
     def close(self):
-        self.reload()
-
-    def delete(self, obj=None):
-        """delete obj from __objects if present
-        """
-        if obj:
-            # format key from obj
-            key = "{}.{}".format(obj.__class__.__name__, obj.id)
-            if key in self.__objects:
-                del self.__objects[key]
+        """Reload the json objects."
+        return self.reload()
