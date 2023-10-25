@@ -1,4 +1,4 @@
--- Create dev database and user
+--A script that reaes a devepoer databse
 CREATE DATABASE IF NOT EXISTS hbnb_dev_db;
 CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost' IDENTIFIED BY 'hbnb_dev_pwd';
 GRANT USAGE ON *.* TO 'hbnb_dev'@'localhost';
