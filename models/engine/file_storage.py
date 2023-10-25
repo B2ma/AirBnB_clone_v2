@@ -66,5 +66,5 @@ class FileStorage:
             pass
 
     def close(self):
-        """Reload the json objects."
+        """Reload the json objects."""
         return self.reload()
