@@ -7,8 +7,9 @@ from fabric.api import env, put, run
 import os
 from datetime import datetime
 
-env.hosts = ['54.159.22.249','54.173.9.57']
+env.hosts = ['54.159.22.249', '54.173.9.57']
 env.user = 'ubuntu'
+
 
 def do_deploy(archive_path):
     '''
@@ -30,5 +31,6 @@ def do_deploy(archive_path):
         run('ln -s {} /data/web_static/current'.format(releases_path))
         print('New version deployed!')
         return True
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         return False
