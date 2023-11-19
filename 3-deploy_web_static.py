@@ -9,12 +9,13 @@ from datetime import datetime
 
 env.hosts = ['54.159.22.249', '54.173.9.57']
 env.user = 'ubuntu'
+env.use_ssh_config = True
 
 
 def deploy():
     ''' Deploys archive '''
     archive_path = do_pack()
-    if not archive_path:
+    if archive_path is None:
         return False
     return do_deploy(archive_path)
 
@@ -37,6 +38,7 @@ def do_deploy(archive_path):
         run('rm -rf {}/web_static'.format(releases_path))
         run('rm -rf /data/web_static/current')
         run('ln -s {} /data/web_static/current'.format(releases_path))
+        print('Symbolic link created successfully.')
         print('New version deployed!')
         return True
     except:
