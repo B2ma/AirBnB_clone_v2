@@ -3,9 +3,9 @@
 distributes an archive to your web servers, using the function do_deploy
 """
 
-from fabric.api import env, put, run, local
-import os
+from fabric.api import *
 from datetime import datetime
+import os
 
 env.hosts = ['54.159.22.249', '54.173.9.57']
 env.user = 'ubuntu'
@@ -15,7 +15,7 @@ env.use_ssh_config = True
 def deploy():
     ''' Deploys archive '''
     archive_path = do_pack()
-    if archive_path is None:
+    if not archive_path:
         return False
     return do_deploy(archive_path)
 
@@ -38,7 +38,6 @@ def do_deploy(archive_path):
         run('rm -rf {}/web_static'.format(releases_path))
         run('rm -rf /data/web_static/current')
         run('ln -s {} /data/web_static/current'.format(releases_path))
-        print('Symbolic link created successfully.')
         print('New version deployed!')
         return True
     except:
@@ -52,17 +51,14 @@ def do_pack():
     Returns:
         Archive path if generated successfully, otherwise None
     """
-    local("mkdir -p versions")
-    now = datetime.utcnow()
-    archive_name = "web_static_{}{}{}{}{}{}.tgz".format(
-        now.year, now.month, now.day, now.hour, now.minute, now.second
-    )
-
-    archive_path = os.path.join("versions", archive_name)
-    result = local("tar -czvf {} web_static".format(archive_path))
-
-    if result.succeeded:
-        print("Web static packed: {}".format(archive_path))
+    try:
+        local('mkdir -p versions')
+        datetime_format = '%Y%m%d%H%M%S'
+        archive_path = 'versions/web_static_{}.tgz'.format(
+            datetime.now().strftime(datetime_format))
+        local('tar -cvzf {} web_static'.format(archive_path))
+        print('web_static packed: {} -> {}'.format(archive_path,
+              os.path.getsize(archive_path)))
         return archive_path
-    else:
+    except:
         return None
