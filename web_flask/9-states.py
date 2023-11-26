@@ -6,6 +6,7 @@ from models.state import State
 
 app = Flask(__name__)
 
+
 @app.route('/states', strict_slashes=False)
 def states_list():
     """
@@ -20,12 +21,13 @@ def states_list():
     states_list = sorted(states.values(), key=lambda state: state.name)
     return render_template('9-states.html', states=states_list)
 
+
 @app.route('/states/<id>', strict_slashes=False)
 def state_cities(id):
     """
     Display a HTML page with details of a specific state and its cities.
 
-    If the state is found, list its cities. Otherwise, display a "Not found!" message.
+    If the state is found, list cities. OW, display "Not found!" message.
 
     Args:
         id (str): The ID of the state.
@@ -39,6 +41,7 @@ def state_cities(id):
     else:
         return render_template('9-states.html', not_found=True)
 
+
 @app.teardown_appcontext
 def teardown_appcontext(exception):
     """
@@ -46,6 +49,6 @@ def teardown_appcontext(exception):
     """
     storage.close()
 
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
