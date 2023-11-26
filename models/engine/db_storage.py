@@ -4,7 +4,7 @@ This module defines the DBStorage class for HBNB project
 based on SQL
 '''
 
-import os
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import BaseModel, Base
@@ -16,6 +16,8 @@ from models.place import Place
 from models.review import Review
 import os
 
+classes = {"Amenity": Amenity, "City": City,
+           "Place": Place, "Review": Review, "State": State, "User": User}
 
 class DBStorage:
     ''' Database storage class that manages storage using
@@ -25,14 +27,14 @@ class DBStorage:
 
     def __init__(self):
         ''' Initialize DBstorage instance'''
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}:3306/{}'.
-                                      format(os.getenv('HBNB_MYSQL_USER'),
-                                             os.getenv('HBNB_MYSQL_PWD'),
-                                             os.getenv('HBNB_MYSQL_HOST'),
-                                             os.getenv('HBNB_MYSQL_DB')),
-                                      pool_pre_ping=True)
+        self.__engine = create_engine(
+        f"mysql+mysqldb://{os.getenv('HBNB_MYSQL_USER')}:{os.getenv('HBNB_MYSQL_PWD')}\
+        @{os.getenv('HBNB_MYSQL_HOST')}:3306/{os.getenv('HBNB_MYSQL_DB')}",
+        pool_pre_ping=True)
 
-        if os.getenv('HBNB_ENV') == 'test':
+        HBNB_ENV = os.getenv('HBNB_ENV', 'development')
+
+        if HBNB_ENV == 'test':
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
@@ -41,18 +43,13 @@ class DBStorage:
         all objects depending of the class name
         '''
         objects = {}
-        classes = [User, State, City, Amenity, Place, Review]
-
-        if cls:
-            classes = [cls]
-
-        for class_obj in classes:
-            query_result = self.__session.query(class_obj).all()
-            for obj in query_result:
-                key = "{}.{}".format(obj.__class__.__name__, obj.id)
-                objects[key] = obj
-
-        return objects
+        for clss in classes:
+            if cls is None or cls is classes[clss] or cls is clss:
+                query_result = self.__session.query(classes[clss]).all()
+                for obj in query_result:
+                    key = obj.__class__.__name__ + '.' + obj.id
+                    objects[key] = obj
+        return (objects)
 
     def new(self, obj):
         ''' Adds the object to the current database session '''
@@ -73,9 +70,8 @@ class DBStorage:
         new_session = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(new_session)
 
-        self.__session = Session()
+        self.__session = Session
 
     def close(self):
         '''Close the session.'''
-        if self.__session is not None:
-            self.__session.close()
+        self.__session.remove()
