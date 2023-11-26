@@ -3,6 +3,7 @@
 from flask import Flask, render_template
 from models import storage
 from models.state import State
+from models.city import City
 
 app = Flask(__name__)
 
@@ -25,9 +26,7 @@ def states_list():
 @app.route('/states/<id>', strict_slashes=False)
 def state_cities(id):
     """
-    Display a HTML page with details of a specific state and its cities.
-
-    If the state is found, list cities. OW, display "Not found!" message.
+    Display a HTML page with the cities of a given state.
 
     Args:
         id (str): The ID of the state.
@@ -37,7 +36,8 @@ def state_cities(id):
     """
     state = storage.get(State, id)
     if state:
-        return render_template('9-states.html', state=state)
+        cities = sorted(state.cities, key=lambda city: city.name)
+        return render_template('9-states.html', state=state, cities=cities)
     else:
         return render_template('9-states.html', not_found=True)
 
